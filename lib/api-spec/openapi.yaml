@@ -1,0 +1,108 @@
+openapi: 3.1.0
+info:
+  # Do not change the title, if the title changes, the import paths will be broken
+  title: Api
+  version: 0.1.0
+  description: API specification
+servers:
+  - url: /api
+    description: Base API path
+tags:
+  - name: health
+    description: Health operations
+  - name: pullRequests
+    description: GitHub pull request operations
+paths:
+  /pull-requests:
+    post:
+      operationId: createPullRequest
+      tags: [pullRequests]
+      summary: Create a pull request
+      description: Creates a branch, commits the text as a .txt file, and opens a PR
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreatePullRequestInput"
+      responses:
+        "201":
+          description: Pull request created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PullRequestResult"
+        "400":
+          description: Invalid input
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+        "502":
+          description: GitHub error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+  /healthz:
+    get:
+      operationId: healthCheck
+      tags: [health]
+      summary: Health check
+      description: Returns server health status
+      responses:
+        "200":
+          description: Healthy
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HealthStatus"
+components:
+  schemas:
+    CreatePullRequestInput:
+      type: object
+      properties:
+        text:
+          type: string
+          minLength: 1
+          description: The text content to commit as a .txt file
+        title:
+          type: string
+          description: Optional PR title
+      required:
+        - text
+    PullRequestResult:
+      type: object
+      properties:
+        prUrl:
+          type: string
+          description: URL of the created pull request
+        prNumber:
+          type: integer
+          description: Pull request number
+        branch:
+          type: string
+          description: Name of the created branch
+        fileName:
+          type: string
+          description: Name of the committed .txt file
+      required:
+        - prUrl
+        - prNumber
+        - branch
+        - fileName
+    ApiError:
+      type: object
+      properties:
+        message:
+          type: string
+      required:
+        - message
+    HealthStatus:
+      type: object
+      properties:
+        status:
+          type: string
+      required:
+        - status
+
